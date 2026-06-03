@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор с историей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+        }
+        .calculator {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+        }
+        #display {
+            width: 100%;
+            height: 50px;
+            font-size: 24px;
+            text-align: right;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            transform: scale(1.02);
+        }
+        .digit {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .operator {
+            background: #667eea;
+            color: white;
+        }
+        .equals {
+            background: #48bb78;
+            color: white;
+        }
+        .clear {
+            background: #e53e3e;
+            color: white;
+        }
+        .history-section {
+            margin-top: 20px;
+            border-top: 2px solid #ddd;
+            padding-top: 15px;
+        }
+        .history-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        #history {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .history-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+        }
+        .clear-history {
+            margin-top: 10px;
+            background: #ccc;
+            color: #333;
+            font-size: 14px;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Калькулятор</h2>
+        <input type="text" id="display" readonly placeholder="0">
+        <div class="buttons">
+            <button class="digit">7</button>
+            <button class="digit">8</button>
+            <button class="digit">9</button>
+            <button class="operator">/</button>
+            
+            <button class="digit">4</button>
+            <button class="digit">5</button>
+            <button class="digit">6</button>
+            <button class="operator">*</button>
+            
+            <button class="digit">1</button>
+            <button class="digit">2</button>
+            <button class="digit">3</button>
+            <button class="operator">-</button>
+            
+            <button class="digit">0</button>
+            <button class="digit">.</button>
+            <button class="equals">=</button>
+            <button class="operator">+</button>
+            
+            <button class="clear">C</button>
+        </div>
+        
+        <div class="history-section">
+            <div class="history-title">📜 История вычислений</div>
+            <div id="history"></div>
+            <button class="clear-history" id="clearHistoryBtn">Очистить историю</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const historyDiv = document.getElementById('history');
+        
+        let currentExpression = '';
+        let resultCalculated = false;
+        
+        function addToHistory(expression, result) {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.textContent = `${expression} = ${result}`;
+            historyDiv.appendChild(historyItem);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+        
+        function calculate(expression) {
+            try {
+                let result = eval(expression);
+                result = Math.round(result * 10000000000) / 10000000000;
+                return result;
+            } catch (e) {
+                return 'Ошибка';
+            }
+        }
+        
+        function updateDisplay(value) {
+            display.value = value;
+        }
+        
+        function handleButtonClick(value) {
+            if (resultCalculated && !isNaN(value) && value !== '.') {
+                currentExpression = value;
+                resultCalculated = false;
+            } else if (resultCalculated && (value === '+' || value === '-' || value === '*' || value === '/')) {
+                currentExpression = display.value + value;
+                resultCalculated = false;
+            } else {
+                currentExpression += value;
+            }
+            updateDisplay(currentExpression);
+        }
+        
+        function handleEquals() {
+            if (currentExpression === '') return;
+            
+            const result = calculate(currentExpression);
+            
+            if (result !== 'Ошибка') {
+                addToHistory(currentExpression, result);
+                updateDisplay(result);
+                currentExpression = result.toString();
+                resultCalculated = true;
+            } else {
+                updateDisplay('Ошибка');
+                currentExpression = '';
+                resultCalculated = false;
+            }
+        }
+        
+        function handleClear() {
+            currentExpression = '';
+            updateDisplay('0');
+            resultCalculated = false;
+        }
+        
+        function handleClearHistory() {
+            historyDiv.innerHTML = '';
+        }
+        
+        document.querySelectorAll('.digit, .operator').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const value = btn.textContent;
+                if (value === '=') return;
+                handleButtonClick(value);
+            });
+        });
+        
+        document.querySelector('.equals').addEventListener('click', handleEquals);
+        document.querySelector('.clear').addEventListener('click', handleClear);
+        document.getElementById('clearHistoryBtn').addEventListener('click', handleClearHistory);
+        
+        updateDisplay('0');
+    </script>
+</body>
+</html>
