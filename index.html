@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Посты пользователей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        /* Список пользователей */
+        .user-list {
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: fit-content;
+        }
+        .user-list h2 {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            font-size: 1.2rem;
+        }
+        .user-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .user-item:hover {
+            background: #eef5fc;
+        }
+        .user-item.active {
+            background: #3498db;
+            color: white;
+        }
+        /* Посты */
+        .posts-area {
+            flex: 1;
+            min-width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .posts-area h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .post-card {
+            background: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .post-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .post-body {
+            color: #555;
+            line-height: 1.4;
+        }
+        .empty {
+            color: #999;
+            text-align: center;
+            padding: 40px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .user-list, .posts-area {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 Посты пользователей</h1>
+    <div class="container">
+        <!-- Блок со списком пользователей -->
+        <div class="user-list">
+            <h2>👥 Пользователи</h2>
+            <div id="usersContainer"></div>
+        </div>
+
+        <!-- Блок с постами -->
+        <div class="posts-area">
+            <h2>📌 Посты</h2>
+            <div id="postsContainer" class="empty">Выберите пользователя</div>
+        </div>
+    </div>
+
+    <script>
+        // === ШАГ 1: Примерные данные (вместо загрузки с сервера) ===
+        // Если у вас есть реальные ссылки на JSON, используйте fetch()
+        
+        const usersData = [
+            { id: 1, name: "Иван Петров", email: "ivan@example.com" },
+            { id: 2, name: "Мария Сидорова", email: "maria@example.com" },
+            { id: 3, name: "Алексей Смирнов", email: "alex@example.com" }
+        ];
+
+        const postsData = [
+            { userId: 1, title: "Мой первый пост", body: "Привет всем! Это мой первый пост на сайте." },
+            { userId: 1, title: "Новости компании", body: "Мы запускаем новый проект!" },
+            { userId: 2, title: "Лайфхаки для разработчиков", body: "Поделюсь полезными советами..." },
+            { userId: 2, title: "Отдых и работа", body: "Как сохранять баланс?" },
+            { userId: 3, title: "Технологии будущего", body: "Что нас ждёт через 5 лет?" }
+        ];
+
+        // === ШАГ 2: Отображаем список пользователей ===
+        const usersContainer = document.getElementById('usersContainer');
+        const postsContainer = document.getElementById('postsContainer');
+
+        // Функция для отображения постов выбранного пользователя
+        function showPostsByUser(userId) {
+            // Используем filter() — как требуется в задании
+            const userPosts = postsData.filter(post => post.userId === userId);
+            
+            if (userPosts.length === 0) {
+                postsContainer.innerHTML = '<div class="empty">📭 У этого пользователя нет постов</div>';
+                return;
+            }
+
+            // Формируем HTML карточек постов
+            let postsHTML = '';
+            userPosts.forEach(post => {
+                postsHTML += `
+                    <div class="post-card">
+                        <div class="post-title">📄 ${post.title}</div>
+                        <div class="post-body">${post.body}</div>
+                    </div>
+                `;
+            });
+            postsContainer.innerHTML = postsHTML;
+        }
+
+        // Функция для отображения списка пользователей
+        function renderUsers() {
+            let usersHTML = '';
+            usersData.forEach(user => {
+                usersHTML += `
+                    <div class="user-item" data-id="${user.id}">
+                        <strong>${user.name}</strong><br>
+                        <small>${user.email}</small>
+                    </div>
+                `;
+            });
+            usersContainer.innerHTML = usersHTML;
+
+            // Добавляем обработчики кликов на каждого пользователя
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Убираем активный класс у всех
+                    document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+                    // Добавляем активный класс текущему
+                    item.classList.add('active');
+                    
+                    const userId = parseInt(item.getAttribute('data-id'));
+                    showPostsByUser(userId);
+                });
+            });
+
+            // Автоматически показываем посты первого пользователя (опционально)
+            if (usersData.length > 0) {
+                document.querySelector('.user-item').classList.add('active');
+                showPostsByUser(usersData[0].id);
+            }
+        }
+
+        // Запускаем отображение
+        renderUsers();
+    </script>
+</body>
+</html>
