@@ -1,0 +1,46 @@
+{% extends 'news/base.html' %}
+
+{% block title %}{{ news.title }} - Моя Компания{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>{{ news.title }}</h1>
+    <div class="news-meta">
+        <strong>Автор:</strong> {{ news.author.username }} | 
+        <strong>Дата публикации:</strong> {{ news.created_date|date:"d.m.Y H:i" }}
+    </div>
+    
+    {% if news.image %}
+        <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-image" style="max-width: 100%;">
+    {% endif %}
+    
+    <div style="line-height: 1.8; font-size: 1.1rem;">
+        {{ news.content|linebreaks }}
+    </div>
+</div>
+
+<div class="card">
+    <h3>Комментарии ({{ comments|length }})</h3>
+    
+    {% for comment in comments %}
+        <div style="border-bottom: 1px solid #eee; padding: 1rem 0;">
+            <strong>{{ comment.author.username }}</strong> 
+            <span style="color: #888; font-size: 0.9rem;">{{ comment.created_date|date:"d.m.Y H:i" }}</span>
+            <p style="margin-top: 0.5rem;">{{ comment.text }}</p>
+        </div>
+    {% empty %}
+        <p>Пока нет комментариев. Будьте первым!</p>
+    {% endfor %}
+    
+    {% if user.is_authenticated %}
+        <h4>Добавить комментарий</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}">Войдите</a>, чтобы оставить комментарий.</p>
+    {% endif %}
+</div>
+{% endblock %}

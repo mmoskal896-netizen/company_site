@@ -1,0 +1,52 @@
+{% extends 'news/base.html' %}
+
+{% block title %}Новости - Моя Компания{% endblock %}
+
+{% block content %}
+<h1>Все новости</h1>
+
+<div class="card">
+    <form method="get" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск по новостям..." style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+        <button type="submit" class="btn btn-primary">🔍 Найти</button>
+        <a href="?sort={% if sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="btn">
+            {% if sort_order == 'desc' %}⬆️ Новые сначала{% else %}⬇️ Старые сначала{% endif %}
+        </a>
+    </form>
+</div>
+
+{% for news in news_list %}
+    <div class="card">
+        <h3 class="news-title">
+            <a href="{% url 'news_detail' news.pk %}">{{ news.title }}</a>
+        </h3>
+        <div class="news-meta">
+            {{ news.created_date|date:"d.m.Y H:i" }} | Автор: {{ news.author.username }}
+        </div>
+        <p>{{ news.content|truncatewords:50 }}</p>
+        {% if news.image %}
+            <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-image" style="max-width: 200px;">
+        {% endif %}
+        <br>
+        <a href="{% url 'news_detail' news.pk %}" class="btn btn-primary">Читать далее →</a>
+    </div>
+{% empty %}
+    <div class="card">
+        <p>Новостей не найдено.</p>
+    </div>
+{% endfor %}
+
+{% if news_list.has_other_pages %}
+    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 2rem;">
+        {% if news_list.has_previous %}
+            <a href="?page={{ news_list.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_order %}&sort={{ sort_order }}{% endif %}" class="btn">← Предыдущая</a>
+        {% endif %}
+        
+        <span style="padding: 0.5rem;">Страница {{ news_list.number }} из {{ news_list.paginator.num_pages }}</span>
+        
+        {% if news_list.has_next %}
+            <a href="?page={{ news_list.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_order %}&sort={{ sort_order }}{% endif %}" class="btn">Следующая →</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

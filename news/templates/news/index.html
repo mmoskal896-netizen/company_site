@@ -1,0 +1,33 @@
+{% extends 'news/base.html' %}
+
+{% block title %}Главная - Моя Компания{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Добро пожаловать в нашу компанию!</h1>
+    <p>Мы занимаемся разработкой современных веб-решений уже более 10 лет. Наша команда профессионалов готова помочь вам с любыми задачами.</p>
+    <p>На нашем сайте вы найдете последние новости из мира технологий, полезные статьи и информацию о наших услугах.</p>
+</div>
+
+<h2>Последние новости</h2>
+{% for news in latest_news %}
+    <div class="card">
+        <h3 class="news-title">
+            <a href="{% url 'news_detail' news.pk %}">{{ news.title }}</a>
+        </h3>
+        <div class="news-meta">
+            {{ news.created_date|date:"d.m.Y H:i" }} | Автор: {{ news.author.username }}
+        </div>
+        <p>{{ news.content|truncatewords:30 }}</p>
+        {% if news.image %}
+            <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-image" style="max-width: 300px;">
+        {% endif %}
+        <br>
+        <a href="{% url 'news_detail' news.pk %}" class="btn btn-primary">Читать далее →</a>
+    </div>
+{% empty %}
+    <div class="card">
+        <p>Пока нет новостей. Зайдите в админ-панель и добавьте первую новость!</p>
+    </div>
+{% endfor %}
+{% endblock %}
